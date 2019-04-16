@@ -1,0 +1,90 @@
+loadroid:
+  requests:
+    default:
+      url:
+        scheme: https
+        host: << $('secrets')['host']
+    generate_2_ids:
+      url:
+        path: /api/1/id/sonyflake/generate
+        query:
+          param-A: Alpha
+          param-B: Beta
+      method: POST
+      basic-auth:
+        username: user-1
+        password: << $('secrets')['password']
+      header:
+        content-type: application/json
+      body:
+        howMany: 2
+    generate_5_ids:
+      url:
+        path: /api/1/id/sonyflake/generate
+      method: POST
+      basic-auth:
+        username: user-1
+        password: << $('secrets')['password']
+      # default to application/json
+      # header:
+      #   content-type: application/json
+      body:
+        howMany: 5
+    generate_several_ids:
+      url:
+        path: << ['', 'api', '1', 'id', 'sonyflake', 'generate'].join('/')
+      method: POST
+      # use javascript
+      basic-auth:
+        username: user-1
+        password: << $('secrets')['password']
+      header:
+        content-type: application/json
+        x-random-token: << Math.random().toString(36).slice(-8)
+      body:
+        howMany: << $('howMany')
+      before:
+        pword: "$('secrets')['password']"
+        howMany: "$('mod') ? $('mod') + 3 : 3"
+      after:
+        mod: $('response').json.newIDs[0] % 3
+  scenarios:
+    generate_ids_randomly:
+      num-users: 200
+      period: 50 # sec
+      loop: false
+      wait: [3.5, 5.5] # random sec
+      requests:
+        generate_2_ids: 80
+        generate_5_ids: 40
+    generate_ids_sequentially: &BASE
+      num-users: 200
+      period: 50
+      # default to false
+      # loop: false
+      # default to [0.5, 5.5]
+      # wait: [0.5, 5.5]
+      requests:
+        - generate_2_ids
+        - generate_5_ids
+        - wait: 3.5 # overwrite
+        - generate_2_ids
+    generate_ids_repeatedly:
+      <<: *BASE
+      loop: true
+      period:
+        overall: 50
+        entry: 10
+    generate_several_ids:
+      num-users: 200
+      period: 60
+      loop: true
+      requests:
+        - generate_several_ids
+        - wait:
+          - 3.5
+          - 5.5
+  run:
+    - generate_several_ids
+    - generate_ids_randomly
+    - generate_ids_repeatedly
