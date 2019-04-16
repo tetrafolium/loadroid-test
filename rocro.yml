@@ -3,9 +3,9 @@ loadroid:
     default:
       url:
         scheme: https
-        host: << $('secrets')['host']
     generate_2_ids:
       url:
+        host: << $('secrets')['host']
         path: /api/1/id/sonyflake/generate
         query:
           param-A: Alpha
@@ -20,6 +20,7 @@ loadroid:
         howMany: 2
     generate_5_ids:
       url:
+        host: << $('secrets')['host']
         path: /api/1/id/sonyflake/generate
       method: POST
       basic-auth:
@@ -32,6 +33,7 @@ loadroid:
         howMany: 5
     generate_several_ids:
       url:
+        host: << $('secrets')['host']
         path: << ['', 'api', '1', 'id', 'sonyflake', 'generate'].join('/')
       method: POST
       # use javascript
